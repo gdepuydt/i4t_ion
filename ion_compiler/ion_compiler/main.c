@@ -11,7 +11,7 @@
 #include <ctype.h>
 #include <math.h>
 
-#include "common.c"
+#include "../../../i4t_lib/src/common.c"
 #include "lex.c"
 #include "test.c"
 

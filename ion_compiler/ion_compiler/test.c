@@ -73,7 +73,13 @@ void keyword_test() {
 }
 
 
-#define assert_token_int(x) (x) //TODO
+#define assert_token_int(x) assert(token.int_val == (x) && match_token(TOKEN_INT))
+#define assert_token_eof() assert(is_token_kind(0));
+#define assert_token_float(x) assert(token.float_val == (x) && match_token(TOKEN_FLOAT))
+#define assert_token_str(x) assert(strcmp(token.str_val, (x)) == 0 && match_token(TOKEN_STR))
+#define assert_token(x) assert(match_token(x))
+#define assert_token_name(x) assert(token.name == str_intern(x) && match_token(TOKEN_NAME))
+
 
 
 void lex_test(void) {
@@ -83,6 +89,62 @@ void lex_test(void) {
 	//Integer literal tests
 	init_stream(NULL, "0 2147483647 0x7fffffff 042 0b1111");
 	assert_token_int(0);
+	assert_token_int(2147483647);
+	assert(token.mod == MOD_HEX);
+	assert_token_int(0x7fffffff);
+	assert(token.mod == MOD_OCT);
+	assert_token_int(042);
+	assert(token.mod == MOD_BIN);
+	assert_token_int(0xF);
+	assert_token_eof();
+
+	// Float literal tests
+	init_stream(NULL, "3.14 .123 42. 3e10");
+	assert_token_float(3.14);
+	assert_token_float(.123);
+	assert_token_float(42.);
+	assert_token_float(3e10);
+	assert_token_eof();
+
+	// Char literal tests
+	init_stream(NULL, "'a' '\\n'");
+	assert_token_int('a');
+	assert_token_int('\n');
+	assert_token_eof();
+
+	// String literal tests
+	init_stream(NULL, "\"foo\" \"a\\nb\"");
+	assert_token_str("foo");
+	assert_token_str("a\nb");
+	assert_token_eof();
+
+	// Operator tests
+	init_stream(NULL, ": := + += ++ < <= << <<=");
+	assert_token(TOKEN_COLON);
+	assert_token(TOKEN_COLON_ASSIGN);
+	assert_token(TOKEN_ADD);
+	assert_token(TOKEN_ADD_ASSIGN);
+	assert_token(TOKEN_INC);
+	assert_token(TOKEN_LT);
+	assert_token(TOKEN_LTEQ);
+	assert_token(TOKEN_LSHIFT);
+	assert_token(TOKEN_LSHIFT_ASSIGN);
+	assert_token_eof();
+
+	// Misc tests
+	init_stream(NULL, "XY+(XY)_HELLO1,234+994");
+	assert_token_name("XY");
+	assert_token(TOKEN_ADD);
+	assert_token(TOKEN_LPAREN);
+	assert_token_name("XY");
+	assert_token(TOKEN_RPAREN);
+	assert_token_name("_HELLO1");
+	assert_token(TOKEN_COMMA);
+	assert_token_int(234);
+	assert_token(TOKEN_ADD);
+	assert_token_int(994);
+	assert_token_eof();
+
 }
 
 

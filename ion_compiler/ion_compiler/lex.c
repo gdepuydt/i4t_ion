@@ -599,3 +599,17 @@ void init_stream(const char *name, const char *buf) {
 	next_token();
 
 }
+
+bool is_token_kind(TokenKind kind) {
+	return token.kind == kind;
+}
+
+bool match_token(TokenKind kind) {
+	if(is_token_kind(kind)) {
+		next_token();
+		return true;
+	}
+	else {
+		return false;
+	}
+}
