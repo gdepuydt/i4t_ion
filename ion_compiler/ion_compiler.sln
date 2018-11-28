@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.106
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ion_compiler", "ion_compiler\ion_compiler.vcxproj", "{09523A05-7A51-40A5-8D00-E0527DBA2D54}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{09523A05-7A51-40A5-8D00-E0527DBA2D54}.Debug|x64.ActiveCfg = Debug|x64
+		{09523A05-7A51-40A5-8D00-E0527DBA2D54}.Debug|x64.Build.0 = Debug|x64
+		{09523A05-7A51-40A5-8D00-E0527DBA2D54}.Debug|x86.ActiveCfg = Debug|Win32
+		{09523A05-7A51-40A5-8D00-E0527DBA2D54}.Debug|x86.Build.0 = Debug|Win32
+		{09523A05-7A51-40A5-8D00-E0527DBA2D54}.Release|x64.ActiveCfg = Release|x64
+		{09523A05-7A51-40A5-8D00-E0527DBA2D54}.Release|x64.Build.0 = Release|x64
+		{09523A05-7A51-40A5-8D00-E0527DBA2D54}.Release|x86.ActiveCfg = Release|Win32
+		{09523A05-7A51-40A5-8D00-E0527DBA2D54}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {50E0F0A7-07E3-4BD4-8CE2-26B0BEE24D80}
+	EndGlobalSection
+EndGlobal
