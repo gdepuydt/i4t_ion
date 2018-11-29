@@ -60,6 +60,12 @@ typedef enum StmtKind{
 	STMT_EXPR,
 }StmtKind;
 
+typedef struct StmtList {
+	SrcPos pos;
+	Stmt **stmts;
+	size_t num_stmts;
+}StmtList;
+
 struct Stmt {
 	StmtKind kind;
 	SrcPos pos;
@@ -69,16 +75,10 @@ struct Stmt {
 		struct {
 			Expr *cond;
 			StmtList then_block;
-			ElseIf *elseifs; //Todo
+			//ElseIf *elseifs; //Todo
 		}if_stmt;
 	};
 };
-
-typedef struct StmtList {
-	SrcPos pos;
-	Stmt **stmts;
-	size_t num_stmts;
-}StmtList;
 
 
 struct Decl {
@@ -177,7 +177,7 @@ struct Expr {
 		struct {
 			unsigned long long val;
 			TokenMod mod;
-			TokenSuffix suffix
+			TokenSuffix suffix;
 		}int_lit;
 		struct {
 			double val;
@@ -195,10 +195,6 @@ struct Expr {
 			CompoundField *fields;
 			size_t num_fields;
 		} compound;
-		struct {
-			Typespec *type;
-			Expr *expr;
-		} cast;
 		struct {
 			Typespec *type;
 			Expr *expr;
