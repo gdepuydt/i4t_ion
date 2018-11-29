@@ -13,6 +13,10 @@
 
 #include "../../../i4t_lib/src/common.c"
 #include "lex.c"
+#include "type.c"
+#include "ast.h"
+#include "resolve.c"
+
 #include "test.c"
 
 
@@ -21,5 +25,3 @@ int main(int argc, char **argv) {
 	printf("Finished!\n");
 	getchar();
 }
-
-//test to file
