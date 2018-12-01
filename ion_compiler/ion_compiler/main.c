@@ -15,6 +15,8 @@
 #include "lex.c"
 #include "type.c"
 #include "ast.h"
+#include "ast.c"
+#include "parse.c"
 #include "resolve.c"
 
 #include "test.c"

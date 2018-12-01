@@ -159,6 +159,82 @@ typedef enum TokenSuffix {
 	SUFFIX_ULL,
 } TokenSuffix;
 
+const char *token_suffic_names[] = {
+	[SUFFIX_NONE] = "",
+	[SUFFIX_D] = "d",
+	[SUFFIX_U] = "u",
+	[SUFFIX_L] = "l",
+	[SUFFIX_UL] = "ul",
+	[SUFFIX_LL] = "ll",
+	[SUFFIX_ULL] = "ull",
+};
+
+const char *token_kind_names[] = {
+	[TOKEN_EOF] = "EOF",
+	[TOKEN_COLON] = ":",
+	[TOKEN_LPAREN] = "(",
+	[TOKEN_RPAREN] = ")",
+	[TOKEN_LBRACE] = "{",
+	[TOKEN_RBRACE] = "}",
+	[TOKEN_LBRACKET] = "[",
+	[TOKEN_RBRACKET] = "]",
+	[TOKEN_COMMA] = ",",
+	[TOKEN_DOT] = ".",
+	[TOKEN_AT] = "@",
+	[TOKEN_ELLIPSIS] = "...",
+	[TOKEN_QUESTION] = "?",
+	[TOKEN_SEMICOLON] = ";",
+	[TOKEN_KEYWORD] = "keyword",
+	[TOKEN_INT] = "int",
+	[TOKEN_FLOAT] = "float",
+	[TOKEN_STR] = "string",
+	[TOKEN_NAME] = "name",
+	[TOKEN_NEG] = "~",
+	[TOKEN_NOT] = "!",
+	[TOKEN_MUL] = "*",
+	[TOKEN_DIV] = "/",
+	[TOKEN_MOD] = "%",
+	[TOKEN_AND] = "&",
+	[TOKEN_LSHIFT] = "<<",
+	[TOKEN_RSHIFT] = ">>",
+	[TOKEN_ADD] = "+",
+	[TOKEN_SUB] = "-",
+	[TOKEN_OR] = "|",
+	[TOKEN_XOR] = "^",
+	[TOKEN_EQ] = "==",
+	[TOKEN_NOTEQ] = "!=",
+	[TOKEN_LT] = "<",
+	[TOKEN_GT] = ">",
+	[TOKEN_LTEQ] = "<=",
+	[TOKEN_GTEQ] = ">=",
+	[TOKEN_AND_AND] = "&&",
+	[TOKEN_OR_OR] = "||",
+	[TOKEN_ASSIGN] = "=",
+	[TOKEN_ADD_ASSIGN] = "+=",
+	[TOKEN_SUB_ASSIGN] = "-=",
+	[TOKEN_OR_ASSIGN] = "|=",
+	[TOKEN_AND_ASSIGN] = "&=",
+	[TOKEN_XOR_ASSIGN] = "^=",
+	[TOKEN_MUL_ASSIGN] = "*=",
+	[TOKEN_DIV_ASSIGN] = "/=",
+	[TOKEN_MOD_ASSIGN] = "%=",
+	[TOKEN_LSHIFT_ASSIGN] = "<<=",
+	[TOKEN_RSHIFT_ASSIGN] = ">>=",
+	[TOKEN_INC] = "++",
+	[TOKEN_DEC] = "--",
+	[TOKEN_COLON_ASSIGN] = ":=",
+};
+
+
+const char *token_kind_name(TokenKind kind) {
+	if (kind < sizeof(token_kind_names) / sizeof(*token_kind_names)) {
+		return token_kind_names[kind];
+	}
+	else {
+		return "<unknown>";
+	}
+}
+
 typedef struct SrcPos {
 	const char  *name;
 	int line;
@@ -199,8 +275,19 @@ void error(SrcPos pos, const char *fmt, ...) {
 	va_end(args);
 }
 
-
+#define fatal_error(...) error(__VA_ARGS__), exit(1))
 #define error_here(...) (error(token.pos, __VA_ARGS__))
+#define fatal_error_here(...) (error_here(__VA_ARGS__), exit(1))
+
+const char *token_info(void) {
+	if (token.kind == TOKEN_NAME || token.kind == TOKEN_KEYWORD) {
+		return token.name;
+	}
+	else {
+		return token_kind_name(token.kind);
+	}
+}
+
 
 char escape_to_char[256] = {
 	['n'] = '\n',
@@ -604,12 +691,37 @@ bool is_token_kind(TokenKind kind) {
 	return token.kind == kind;
 }
 
+bool is_keyword(const char *name) {
+	return is_token_kind(TOKEN_KEYWORD) && token.name == name;
+}
+
+bool match_keyword(const char *name) {
+	if (is_keyword(name)) {
+		next_token();
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
 bool match_token(TokenKind kind) {
 	if(is_token_kind(kind)) {
 		next_token();
 		return true;
 	}
 	else {
+		return false;
+	}
+}
+
+bool expect_token(TokenKind kind) {
+	if (is_token_kind(kind)) {
+		next_token();
+		return true;
+	}
+	else {
+		fatal_error_here("Expected token %s, got %s", token_kind_name(kind), token_info());
 		return false;
 	}
 }

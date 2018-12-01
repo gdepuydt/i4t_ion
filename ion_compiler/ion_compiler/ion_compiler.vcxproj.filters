@@ -30,6 +30,12 @@
     <ClCompile Include="type.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="parse.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ast.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ast.h">
