@@ -29,6 +29,9 @@ NoteList note_list(Note *notes, size_t num_notes) {
 	return (NoteList) { AST_DUP(notes), num_notes };
 }
 
+Typespec *typespec_name(SrcPos pos, const char *name) {
+	//TODO
+}
 
 Expr *expr_new(ExprKind kind, SrcPos pos) {
 	Expr *e = ast_alloc(sizeof(Expr));
@@ -37,6 +40,98 @@ Expr *expr_new(ExprKind kind, SrcPos pos) {
 	return e;
 }
 
+Expr *expr_compound(SrcPos pos, Typespec *type, CompoundField *fields, size_t num_fields) {
+	Expr *e = expr_new(EXPR_COMPOUND, pos);
+	e->compound.type = type;
+	e->compound.fields = AST_DUP(fields);
+	e->compound.num_fields = num_fields;
+	return e;
+}
+
+Expr *expr_cast(SrcPos pos, Typespec *type, Expr *expr) {
+	Expr *e = expr_new(EXPR_CAST, pos);
+	e->cast.type = type;
+	e->cast.expr = expr;
+	return e;
+}
+
+Expr *expr_sizeof_expr(SrcPos pos, Expr *expr) {
+	Expr *e = expr_new(EXPR_SIZEOF_EXPR, pos);
+	e->sizeof_expr = expr;
+	return e;
+}
+
+Expr *expr_sizeof_type(SrcPos pos, Typespec *type) {
+	Expr *e = expr_new(EXPR_SIZEOF_TYPE, pos);
+	e->sizeof_type = type;
+	return e;
+}
+
+Expr *expr_int(SrcPos pos, unsigned long long val, TokenMod mod, TokenSuffix suffix) {
+	Expr *e = expr_new(EXPR_INT, pos);
+	e->int_lit.val = val;
+	e->int_lit.mod = mod;
+	e->int_lit.suffix = suffix;
+	return e;
+}
+
+Expr *expr_float(SrcPos pos, double val, TokenSuffix suffix) {
+	Expr *e = expr_new(EXPR_FLOAT, pos);
+	e->float_lit.val = val;
+	e->float_lit.suffix = suffix;
+	return e;
+}
+
+Expr *expr_str(SrcPos pos, const char *val, TokenMod mod) {
+	Expr *e = expr_new(EXPR_STR, pos);
+	e->str_lit.val = val;
+	e->str_lit.mod = mod;
+	return e;
+}
+
+Expr *expr_name(SrcPos pos, const char *name) {
+	Expr *e = expr_new(EXPR_NAME, pos);
+	e->name = name;
+	return e;
+}
+
+Expr *expr_call(SrcPos pos, Expr *expr, Expr **args, size_t num_args) {
+	Expr *e = expr_new(EXPR_CALL, pos);
+	e->call.expr = expr;
+	e->call.args = AST_DUP(args);
+	e->call.num_args = num_args;
+	return e;
+}
+
+
+Expr *expr_index(SrcPos pos, Expr *expr, Expr *index) {
+	Expr *e = expr_new(EXPR_INDEX, pos);
+	e->index.expr = expr;
+	e->index.index = index;
+	return e;
+}
+
+Expr *expr_field(SrcPos pos, Expr *expr, const char *name) {
+	Expr *e = expr_new(EXPR_FIELD, pos);
+	e->field.expr = expr;
+	e->field.name = name;
+	return e;
+}
+
+Expr *expr_unary(SrcPos pos, TokenKind op, Expr *expr) {
+	Expr *e = expr_new(EXPR_UNARY, pos);
+	e->unary.op = op;
+	e->unary.expr = expr;
+	return e;
+}
+
+Expr *expr_binary(SrcPos pos, TokenKind op, Expr *left, Expr *right) {
+	Expr *e = expr_new(EXPR_BINARY, pos);
+	e->binary.op = op;
+	e->binary.left = left;
+	e->binary.right = right;
+	return e;
+}
 
 Expr *expr_ternary(SrcPos pos, Expr *cond, Expr *then_expr, Expr *else_expr) {
 	Expr *e = expr_new(EXPR_TERNARY, pos);

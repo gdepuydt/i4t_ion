@@ -184,7 +184,7 @@ struct Expr {
 			TokenSuffix suffix;
 		}float_lit;
 		struct {
-			const char *name;
+			const char *val;
 			TokenMod mod;
 		}str_lit;
 		const char *name;
