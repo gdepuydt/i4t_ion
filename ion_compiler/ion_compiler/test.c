@@ -195,5 +195,5 @@ void common_test(void) {
 void main_test(void) {
 	common_test();
 	lex_test();
-	parse_test(); //TODO
+	parse_test();
 }

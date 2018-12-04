@@ -1,13 +1,131 @@
 Expr *parse_expr(void);
 Expr *parse_expr_unary(void);
+Typespec *parse_type(void);
+Decl *parse_decl_opt(void);
+Stmt *parse_stmt(void);
 
-Typespec *parse_type() {
-	//TODO
+Typespec *parse_type_func_param(void) {
+	Typespec *type = parse_type();
+	if (match_token(TOKEN_COLON)) {
+		if (type->kind != TYPESPEC_NAME) {
+			error_here("Colons in parameters of func types must be preceded by names.");
+		}
+		type = parse_type();
+	}
+	return type;
+}
+
+Typespec *parse_type_func(void) {
+	SrcPos pos = token.pos;
+	Typespec **args = NULL;
+	bool has_varargs = false;
+	expect_token(TOKEN_LPAREN);
+	if (!is_token_kind(TOKEN_RPAREN)) {
+		buf_push(args, parse_type_func_param());
+		while (match_token(TOKEN_COMMA)) {
+			if (match_token(TOKEN_ELLIPSIS)) {
+				if (has_varargs) {
+					error_here("Multiple ellipsis instances in function type");
+				}
+				has_varargs = true;
+			}
+			else {
+				if (has_varargs) {
+					error_here("Ellipsis must be last parameter in function type");
+				}
+				buf_push(args, parse_type_func_param());
+			}
+		}
+	}
+	expect_token(TOKEN_RPAREN);
+	Typespec *ret = NULL;
+	if (match_token(TOKEN_COLON)) {
+		ret = parse_type();
+	}
+	return typespec_func(pos, args, buf_len(args), ret, has_varargs);
 }
 
 
-Expr *parse_expr_compound() {
-	//TODO
+Typespec *parse_type_base(void) {
+	if (is_token_kind(TOKEN_NAME)) {
+		SrcPos pos = token.pos;
+		const char *name = token.name;
+		next_token();
+		return typespec_name(pos, name);
+	}
+	else if (match_keyword(func_keyword)) {
+		return parse_type_func();
+	}
+	else if (match_token(TOKEN_LPAREN)) {
+		Typespec *type = parse_type();
+		expect_token(TOKEN_RPAREN);
+		return type;
+	}
+	else {
+		fatal_error_here("Unexpected token %s in type", token_info());
+		return NULL;
+	}
+}
+
+Typespec *parse_type(void) {
+	Typespec *type = parse_type_base();
+	SrcPos pos = token.pos;
+	while (is_token_kind(TOKEN_LBRACKET) || is_token_kind(TOKEN_MUL) || is_keyword(const_keyword)) {
+		if (match_token(TOKEN_LBRACKET)) {
+			Expr *size = NULL;
+			if (!is_token_kind(TOKEN_RBRACKET)) {
+				size = parse_expr();
+			}
+			expect_token(TOKEN_RBRACKET);
+			type = typespec_array(pos, type, size);
+		}
+		else if (match_keyword(const_keyword)) {
+			type = typespec_const(pos, type);
+		}
+		else {
+			assert(is_token_kind(TOKEN_MUL));
+			next_token();
+			type = typespec_ptr(pos, type);
+		}
+	}
+	return type;
+}
+
+CompoundField parse_expr_compound_field(void) {
+	SrcPos pos = token.pos;
+	if (match_token(TOKEN_LBRACKET)) {
+		Expr *index = parse_expr();
+		expect_token(TOKEN_RBRACKET);
+		expect_token(TOKEN_ASSIGN);
+		return (CompoundField) { FIELD_INDEX, pos, parse_expr(), .index = index };
+	}
+	else {
+		Expr *expr = parse_expr();
+		if (match_token(TOKEN_ASSIGN)) {
+			if (expr->kind != EXPR_NAME) {
+				fatal_error_here("Named initializer in compounds literal must be preceded by field name");
+			}
+			return (CompoundField) { FIELD_NAME, pos, parse_expr(), .name = expr->name };
+		}
+		else {
+			return (CompoundField) { FIELD_DEFAULT, pos, expr };
+		}
+	}
+}
+
+
+Expr *parse_expr_compound(Typespec *type) {
+	SrcPos pos = token.pos;
+	expect_token(TOKEN_LBRACE);
+	CompoundField *fields = NULL;
+	while (!is_token_kind(TOKEN_RBRACE)) {
+		buf_push(fields, parse_expr_compound_field());
+		if (!match_token(TOKEN_COMMA)) {
+			break;
+		}
+	}
+	expect_token(TOKEN_RBRACE);
+	return expr_compound(pos, type, fields, buf_len(fields));
 }
 
 Expr *parse_expr_operand(void) {
@@ -244,6 +362,12 @@ Decl *parse_decl_enum(SrcPos pos) {
 			break;
 		}
 	}
+	expect_token(TOKEN_RBRACE);
+	return decl_enum(pos, name, items, buf_len(items));
+}
+
+Decl *parse_decl_aggregate(SrcPos pos, DeclKind kind) {
+	//TODO
 }
 
 Decl *parse_decl_opt(void) {
@@ -251,7 +375,13 @@ Decl *parse_decl_opt(void) {
 	if (match_keyword(enum_keyword)) {
 		return parse_decl_enum(pos);
 	}
+	else if (match_keyword(struct_keyword)) {
+		return parse_decl_aggregate(pos, DECL_STRUCT);
+	}
 	//TODO fill in all other declaration types
+	else {
+		return NULL;
+	}
 }
 
 

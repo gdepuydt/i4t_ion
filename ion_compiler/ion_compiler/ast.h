@@ -1,6 +1,6 @@
 typedef struct Expr Expr;
 typedef struct Decl Decl;
-typedef struct TypeSpec Typespec;
+typedef struct Typespec Typespec;
 typedef struct Stmt Stmt;
 
 typedef enum DeclKind {

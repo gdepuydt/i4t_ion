@@ -29,8 +29,45 @@ NoteList note_list(Note *notes, size_t num_notes) {
 	return (NoteList) { AST_DUP(notes), num_notes };
 }
 
+Typespec *typespec_new(TypespecKind kind, SrcPos pos) {
+	Typespec *t = ast_alloc(sizeof(Typespec));
+	t->kind = kind;
+	t->pos = pos;
+	return t;
+}
+
+Typespec *typespec_array(SrcPos pos, Typespec *elem, Expr *size) {
+	Typespec *t = typespec_new(TYPESPEC_ARRAY, pos);
+	t->base = elem;
+	t->num_elems = size;
+	return t;
+}
+
+Typespec *typespec_func(SrcPos pos, Typespec **args, size_t num_args, Typespec *ret, bool has_varargs) {
+	Typespec *t = typespec_new(TYPESPEC_FUNC, pos);
+	t->func.args = AST_DUP(args);
+	t->func.num_args = num_args;
+	t->func.ret = ret;
+	t->func.has_varargs = has_varargs;
+	return t;
+}
+
 Typespec *typespec_name(SrcPos pos, const char *name) {
-	//TODO
+	Typespec *t = typespec_new(TYPESPEC_NAME, pos);
+	t->name = name;
+	return t;
+}
+
+Typespec *typespec_ptr(SrcPos pos, Typespec *base) {
+	Typespec *t = typespec_new(TYPESPEC_PTR, pos);
+	t->base = base;
+	return t;
+}
+
+Typespec *typespec_const(SrcPos pos, Typespec *base) {
+	Typespec *t = typespec_new(TYPESPEC_CONST, pos);
+	t->base = base;
+	return t;
 }
 
 Expr *expr_new(ExprKind kind, SrcPos pos) {
@@ -139,4 +176,19 @@ Expr *expr_ternary(SrcPos pos, Expr *cond, Expr *then_expr, Expr *else_expr) {
 	e->ternary.then_expr = then_expr;
 	e->ternary.else_expr = else_expr;
 	return e;
+}
+
+Decl *decl_new(DeclKind kind, SrcPos pos, const char *name) {
+	Decl *d = ast_alloc(sizeof(Decl));
+	d->kind = kind;
+	d->pos = pos;
+	d->name = name;
+	return d;
+}
+
+Decl *decl_enum(SrcPos pos, const char *name, EnumItem *items, size_t num_items) {
+	Decl *d = decl_new(DECL_ENUM, pos, name);
+	d->enum_decl.items = AST_DUP(items);
+	d->enum_decl.num_items = num_items;
+	return d;
 }
