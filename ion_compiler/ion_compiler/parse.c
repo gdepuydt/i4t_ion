@@ -331,6 +331,10 @@ Expr *parse_expr(void) {
 	return parse_expr_ternary();
 }
 
+StmtList parse_stmt_block(void) {
+	//TODO
+}
+
 
 NoteList parse_note_list(void) {
 	Note *notes = NULL;
@@ -366,9 +370,87 @@ Decl *parse_decl_enum(SrcPos pos) {
 	return decl_enum(pos, name, items, buf_len(items));
 }
 
-Decl *parse_decl_aggregate(SrcPos pos, DeclKind kind) {
-	//TODO
+AggregateItem parse_decl_aggregate_item(void) {
+	SrcPos pos = token.pos;
+	const char **names = NULL;
+	buf_push(names, parse_name());
+	while (match_token(TOKEN_COMMA)) {
+		buf_push(names, parse_name());
+	}
+	expect_token(TOKEN_COLON);
+	Typespec *type = parse_type();
+	expect_token(TOKEN_SEMICOLON);
+	return (AggregateItem) { pos, names, buf_len(names), type };
 }
+
+Decl *parse_decl_aggregate(SrcPos pos, DeclKind kind) {
+	assert(kind == DECL_STRUCT || kind == DECL_UNION);
+	const char *name = parse_name();
+	expect_token(TOKEN_LBRACE);
+	AggregateItem *items = NULL;
+	while (!is_token_eof() && !is_token_kind(TOKEN_RBRACE)) {
+		buf_push(items, parse_decl_aggregate_item());
+	}
+	expect_token(TOKEN_RBRACE);
+	return decl_aggregate(pos, kind, name, items, buf_len(items));
+}
+
+Decl *parse_decl_const(SrcPos pos) {
+	const char *name = parse_name();
+	expect_token(TOKEN_ASSIGN);
+	Expr *expr = parse_expr();
+	expect_token(TOKEN_SEMICOLON);
+	return decl_const(pos, name, expr);
+}
+
+Decl *parse_decl_typedef(SrcPos pos) {
+	const char *name = parse_name();
+	expect_token(TOKEN_ASSIGN);
+	Typespec *type = parse_type();
+	expect_token(TOKEN_SEMICOLON);
+	return decl_typedef(pos, name, type);
+}
+
+FuncParam parse_decl_func_param(void) {
+	SrcPos pos = token.pos;
+	const char *name = parse_name();
+	expect_token(TOKEN_COLON);
+	Typespec *type = parse_type();
+	return (FuncParam) { pos, name, type };
+}
+
+Decl *parse_decl_func(SrcPos pos) {
+	const char *name = parse_name();
+	expect_token(TOKEN_LPAREN);
+	FuncParam *params = NULL;
+	bool has_varargs = false;
+	if (!is_token_kind(TOKEN_RPAREN)) {
+		buf_push(params, parse_decl_func_param());
+		while (match_token(TOKEN_COMMA)) {
+			if (match_token(TOKEN_ELLIPSIS)) {
+				if (has_varargs) {
+					error_here("Multiple ellipsis in function declaration");
+				}
+				has_varargs = true;
+			}
+			else {
+				if (has_varargs) {
+					error_here("Ellipsis must be last parameter in function declaration");
+				}
+				buf_push(params, parse_decl_func_param());
+			}
+		}
+	}
+	expect_token(TOKEN_RPAREN);
+	Typespec *ret_type = NULL;
+	if (match_token(TOKEN_COLON)) {
+		ret_type = parse_type();
+	}
+	StmtList block = parse_stmt_block();
+	return decl_func(pos, name, params, buf_len(params), ret_type, has_varargs, block);
+}
+	
+
 
 Decl *parse_decl_opt(void) {
 	SrcPos pos = token.pos;
@@ -378,6 +460,19 @@ Decl *parse_decl_opt(void) {
 	else if (match_keyword(struct_keyword)) {
 		return parse_decl_aggregate(pos, DECL_STRUCT);
 	}
+	else if (match_keyword(union_keyword)) {
+		return parse_decl_aggregate(pos, DECL_UNION);
+	}
+	else if (match_keyword(const_keyword)) {
+		return parse_decl_const(pos);
+	}
+	else if (match_keyword(typedef_keyword)) {
+		return parse_decl_typedef(pos);
+	}
+	else if (match_keyword(func_keyword)) {
+		return parse_decl_func(pos);
+	}
+
 	//TODO fill in all other declaration types
 	else {
 		return NULL;

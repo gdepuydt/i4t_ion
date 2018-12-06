@@ -156,7 +156,7 @@ void lex_test(void) {
 void parse_test(void) {
 	const char *decls[] = {
 		//"var x: char[256] = {1, 2, 3, ['a'] = 4}",
-		//"struct Vector { x, y: float; }",
+		"struct Vector { x, y: float; }",
 		//"var v = Vector{x = 1.0, y = -1.0}",
 		//"var v: Vector = {1.0, -1.0}",
 		//"const n = sizeof(:int*[16])",
@@ -168,7 +168,7 @@ void parse_test(void) {
 		//"func f(x: int): bool { switch (x) { case 0: case 1: return true; case 2: default: return false; } }",
 		"enum Color { RED = 3, GREEN, BLUE = 0 }",
 		//"const pi = 3.14",
-		//"union IntOrFloat { i: int; f: float; }",
+		"union IntOrFloat { i: int; f: float; }",
 		//"typedef Vectors = Vector[1+2]",
 		//"func f() { do { print(42); } while(1); }",
 		//"typedef T = (func(int):int)[16]",

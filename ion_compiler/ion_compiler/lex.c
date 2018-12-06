@@ -695,6 +695,10 @@ bool is_keyword(const char *name) {
 	return is_token_kind(TOKEN_KEYWORD) && token.name == name;
 }
 
+bool is_token_eof(void) {
+	return token.kind == TOKEN_EOF;
+}
+
 bool match_keyword(const char *name) {
 	if (is_keyword(name)) {
 		next_token();

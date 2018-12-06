@@ -103,6 +103,17 @@ struct Decl {
 			bool has_varargs;
 			StmtList block;
 		} func;
+		struct {
+			Typespec *type;
+		} typedef_decl;
+		struct {
+			Typespec *type;
+			Expr *expr;
+		} var;
+		struct {
+			Expr *expr;
+		} const_decl;
+
 	};
 
 };

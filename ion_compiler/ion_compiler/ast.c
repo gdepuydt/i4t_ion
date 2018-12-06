@@ -192,3 +192,33 @@ Decl *decl_enum(SrcPos pos, const char *name, EnumItem *items, size_t num_items)
 	d->enum_decl.num_items = num_items;
 	return d;
 }
+
+Decl *decl_aggregate(SrcPos pos, DeclKind kind, const char *name, AggregateItem *items, size_t num_items) {
+	assert(kind == DECL_STRUCT || kind == DECL_UNION);
+	Decl *d = decl_new(kind, pos, name);
+	d->aggregate.items = AST_DUP(items);
+	d->aggregate.num_items = num_items;
+	return d;
+}
+
+Decl *decl_const(SrcPos pos, const char *name, Expr *expr) {
+	Decl *d = decl_new(DECL_CONST, pos, name);
+	d->const_decl.expr = expr;
+	return d;
+}
+
+Decl *decl_typedef(SrcPos pos, const char *name, Typespec *type) {
+	Decl *d = decl_new(DECL_TYPEDEF, pos, name);
+	d->typedef_decl.type = type;
+	return d;
+}
+
+Decl *decl_func(SrcPos pos, const char *name, FuncParam *params, size_t num_params, Typespec *ret_type, bool has_varargs, StmtList block) {
+	Decl *d = decl_new(DECL_FUNC, pos, name);
+	d->func.params = AST_DUP(params);
+	d->func.num_params = num_params;
+	d->func.ret_type = ret_type;
+	d->func.has_varargs = has_varargs;
+	d->func.block = block;
+	return d;
+}
