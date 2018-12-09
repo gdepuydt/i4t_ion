@@ -4,6 +4,8 @@ Typespec *parse_type(void);
 Decl *parse_decl_opt(void);
 Stmt *parse_stmt(void);
 
+
+
 Typespec *parse_type_func_param(void) {
 	Typespec *type = parse_type();
 	if (match_token(TOKEN_COLON)) {
@@ -326,15 +328,105 @@ Expr *parse_expr_ternary(void) {
 	return expr;
 }
 
+Expr *parse_paren_expr(void) {
+	expect_token(TOKEN_LPAREN);
+	Expr *expr = parse_expr();
+	expect_token(TOKEN_RPAREN);
+	return expr;
+}
 
 Expr *parse_expr(void) {
 	return parse_expr_ternary();
 }
 
 StmtList parse_stmt_block(void) {
+	SrcPos pos = token.pos;
+	expect_token(TOKEN_LBRACE);
+	Stmt **stmts = NULL;
+	while (!is_token_eof() && !is_token_kind(TOKEN_RBRACE)) {
+		buf_push(stmts, parse_stmt());
+	}
+	expect_token(TOKEN_RBRACE);
+	return stmt_list(pos, stmts, buf_len(stmts));
+}
+
+Stmt *parse_stmt_if(SrcPos pos) {
+	Expr *cond = parse_paren_expr();
+	StmtList then_block = parse_stmt_block();
+	StmtList else_block = { 0 };
+	ElseIf *elseifs = NULL;
+	while (match_keyword(else_keyword)) {
+		if (!match_keyword(if_keyword)) {
+			else_block = parse_stmt_block();
+			break;
+		}
+		Expr *elseif_cond = parse_paren_expr();
+		StmtList elseif_block = parse_stmt_block();
+		buf_push(elseifs, (ElseIf) { elseif_cond, elseif_block });
+	}
+	return stmt_if(pos, cond, then_block, elseifs, buf_len(elseifs), else_block);
+}
+
+Stmt *parse_stmt_while(SrcPos pos) {
+	Expr *cond = parse_paren_expr();
+	return stmt_while(pos, cond, parse_stmt_block());
+}
+
+Stmt *parse_stmt_do_while(SrcPos pos) {
+	StmtList block = parse_stmt_block();
+	if (!match_keyword(while_keyword)) {
+		fatal_error_here("Expected 'while' after 'do' block");
+		return NULL;
+	}
+	Stmt *stmt = stmt_do_while(pos, parse_paren_expr(), block);
+	expect_token(TOKEN_SEMICOLON);
+	return stmt;
+}
+
+Stmt *parse_simple_stmt() {
 	//TODO
 }
 
+Stmt *parse_stmt_for(SrcPos pos) {
+	expect_token(TOKEN_LPAREN);
+	Stmt *init = NULL;
+	if (!is_token_kind(TOKEN_SEMICOLON)) {
+		init = parse_simple_stmt();
+	}
+	expect_token(TOKEN_SEMICOLON);
+	Expr *cond = NULL;
+	if (!is_token_kind(TOKEN_SEMICOLON)) {
+		cond = parse_expr();
+	}
+	expect_token(TOKEN_SEMICOLON);
+	Stmt *next = NULL;
+	if (!is_token_kind(TOKEN_RPAREN)) {
+		next = parse_simple_stmt();
+		if (next->kind == STMT_INIT) {
+			error_here("Init statements not allowed in for-statement's next clause");
+		}
+	}
+	expect_token(TOKEN_RPAREN);
+	return stmt_for(pos, init, cond, next, parse_stmt_block());
+}
+
+
+Stmt *parse_stmt(void) {
+	SrcPos pos = token.pos;
+	if (match_keyword(if_keyword)) {
+		return parse_stmt_if(pos);
+	}
+	else if (match_keyword(while_keyword)) {
+		return parse_stmt_while(pos);
+	}
+	else if (match_keyword(do_keyword)) {
+		return parse_stmt_do_while(pos);
+	}
+	else if (match_keyword(for_keyword)) {
+		return parse_stmt_for(pos);
+	}
+	//TODO: parse other stmt cases
+}
 
 NoteList parse_note_list(void) {
 	Note *notes = NULL;
@@ -449,8 +541,28 @@ Decl *parse_decl_func(SrcPos pos) {
 	StmtList block = parse_stmt_block();
 	return decl_func(pos, name, params, buf_len(params), ret_type, has_varargs, block);
 }
-	
 
+Decl *parse_decl_var(SrcPos pos) {
+	const char *name = parse_name();
+	if (match_token(TOKEN_ASSIGN)) {
+		Expr *expr = parse_expr();
+		expect_token(TOKEN_SEMICOLON);
+		return decl_var(pos, name, NULL, expr);
+	}
+	else if (match_token(TOKEN_COLON)) {
+		Typespec *type = parse_type();
+		Expr *expr = NULL;
+		if (match_token(TOKEN_ASSIGN)) {
+			expr = parse_expr();
+		}
+		expect_token(TOKEN_SEMICOLON);
+		return decl_var(pos, name, type, expr);
+	}
+	else {
+		fatal_error_here("Expected : or = after var, got %s", token_info());
+		return NULL;
+	}
+}
 
 Decl *parse_decl_opt(void) {
 	SrcPos pos = token.pos;
@@ -472,8 +584,9 @@ Decl *parse_decl_opt(void) {
 	else if (match_keyword(func_keyword)) {
 		return parse_decl_func(pos);
 	}
-
-	//TODO fill in all other declaration types
+	else if (match_keyword(var_keyword)) {
+		return parse_decl_var(pos);
+	}
 	else {
 		return NULL;
 	}
@@ -489,3 +602,8 @@ Decl *parse_decl(void) {
 	decl->notes = notes;
 	return decl;
 }
+
+
+
+
+

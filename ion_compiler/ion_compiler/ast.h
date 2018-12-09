@@ -66,6 +66,18 @@ typedef struct StmtList {
 	size_t num_stmts;
 }StmtList;
 
+typedef struct SwitchCase {
+	Expr **exprs;
+	size_t num_exprs;
+	bool is_default;
+	StmtList block;
+}SwitchCase;
+
+typedef struct ElseIf {
+	Expr *cond;
+	StmtList block;
+}ElseIf;
+
 struct Stmt {
 	StmtKind kind;
 	SrcPos pos;
@@ -75,8 +87,36 @@ struct Stmt {
 		struct {
 			Expr *cond;
 			StmtList then_block;
-			//ElseIf *elseifs; //Todo
+			ElseIf *elseifs;
+			size_t num_elseifs;
+			StmtList else_block;
 		}if_stmt;
+		struct {
+			Expr *cond;
+			StmtList block;
+		} while_stmt;
+		struct {
+			Stmt *init;
+			Expr *cond;
+			Stmt *next;
+			StmtList block;
+		} for_stmt;
+		struct {
+			Expr *expr;
+			SwitchCase *cases;
+			size_t num_cases;
+		} switch_stmt;
+		StmtList block;
+		struct {
+			TokenKind op;
+			Expr *left;
+			Expr *right;
+		} assign;
+		struct {
+			const char *name;
+			Typespec *type;
+			Expr *expr;
+		} init;
 	};
 };
 
@@ -179,7 +219,6 @@ typedef struct CompoundField {
 	};
 }CompoundField;
 
-
 struct Expr {
 	ExprKind kind;
 	SrcPos pos;
@@ -239,3 +278,4 @@ struct Expr {
 		} field;
 	};
 };
+

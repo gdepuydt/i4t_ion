@@ -213,6 +213,13 @@ Decl *decl_typedef(SrcPos pos, const char *name, Typespec *type) {
 	return d;
 }
 
+Decl *decl_var(SrcPos pos, const char *name, Typespec *type, Expr *expr) {
+	Decl *d = decl_new(DECL_VAR, pos, name);
+	d->var.type = type;
+	d->var.expr = expr;
+	return d;
+}
+
 Decl *decl_func(SrcPos pos, const char *name, FuncParam *params, size_t num_params, Typespec *ret_type, bool has_varargs, StmtList block) {
 	Decl *d = decl_new(DECL_FUNC, pos, name);
 	d->func.params = AST_DUP(params);
@@ -222,3 +229,79 @@ Decl *decl_func(SrcPos pos, const char *name, FuncParam *params, size_t num_para
 	d->func.block = block;
 	return d;
 }
+
+StmtList stmt_list(SrcPos pos, Stmt **stmts, size_t num_stmts) {
+	return (StmtList){pos, AST_DUP(stmts), num_stmts};
+}
+
+Stmt *stmt_new(StmtKind kind, SrcPos pos) {
+	Stmt *s = ast_alloc(sizeof(Stmt));
+	s->kind = kind;
+	s->pos = pos;
+	return s;
+}
+
+Stmt *stmt_if(SrcPos pos, Expr *cond, StmtList then_block, ElseIf *elseifs, size_t num_elseifs, StmtList else_block) {
+	Stmt *s = stmt_new(STMT_IF, pos);
+	s->if_stmt.cond = cond;
+	s->if_stmt.then_block = then_block;
+	s->if_stmt.elseifs = AST_DUP(elseifs);
+	s->if_stmt.num_elseifs = num_elseifs;
+	s->if_stmt.else_block = else_block;
+	return s;
+}
+
+Stmt *stmt_while(SrcPos pos, Expr *cond, StmtList block) {
+	Stmt *s = stmt_new(STMT_WHILE, pos);
+	s->while_stmt.cond = cond;
+	s->while_stmt.block = block;
+	return s;
+}
+
+Stmt *stmt_do_while(SrcPos pos, Expr *cond , StmtList block) {
+	Stmt *s = stmt_new(STMT_DO_WHILE, pos);
+	s->while_stmt.cond = cond;
+	s->while_stmt.block = block;
+	return s;
+}
+
+Stmt *stmt_for(SrcPos pos, Stmt *init, Expr *cond, Stmt *next, StmtList block) {
+	Stmt *s = stmt_new(STMT_FOR, pos);
+	s->for_stmt.block = block;
+	s->for_stmt.cond = cond;
+	s->for_stmt.init = init;
+	s->for_stmt.next = next;
+	return s;
+}
+
+Stmt *stmt_switch(SrcPos pos, Expr *expr, SwitchCase *cases, size_t num_cases) {
+	Stmt *s = stmt_new(STMT_SWITCH, pos);
+	s->switch_stmt.expr = expr;
+	s->switch_stmt.cases = AST_DUP(cases);
+	s->switch_stmt.num_cases = num_cases;
+	return s;
+}
+
+Stmt *stmt_assign(SrcPos pos, TokenKind op, Expr *left, Expr *right) {
+	Stmt *s = stmt_new(STMT_ASSIGN, pos);
+	s->assign.op = op;
+	s->assign.left = left;
+	s->assign.right = right;
+	return s;
+}
+
+Stmt *stmt_init(SrcPos pos, const char *name, Typespec *type, Expr *expr) {
+	Stmt *s = stmt_new(STMT_INIT, pos);
+	s->init.name = name;
+	s->init.type = type;
+	s->init.expr = expr;
+	return s;
+}
+
+Stmt *stmt_expr(SrcPos pos, Expr *expr) {
+	Stmt *s = stmt_new(STMT_EXPR, pos);
+	s->expr = expr;
+	return s;
+}
+
+#undef AST_DUP
