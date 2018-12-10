@@ -74,7 +74,7 @@ void keyword_test() {
 
 
 #define assert_token_int(x) assert(token.int_val == (x) && match_token(TOKEN_INT))
-#define assert_token_eof() assert(is_token_kind(0));
+#define assert_token_eof() assert(is_token(0));
 #define assert_token_float(x) assert(token.float_val == (x) && match_token(TOKEN_FLOAT))
 #define assert_token_str(x) assert(strcmp(token.str_val, (x)) == 0 && match_token(TOKEN_STR))
 #define assert_token(x) assert(match_token(x))
@@ -184,6 +184,10 @@ void parse_test(void) {
 	}
 }
 
+void resolve_test(void) {
+	//TODO
+}
+
 
 void common_test(void) {
 	buf_test();
@@ -195,5 +199,6 @@ void common_test(void) {
 void main_test(void) {
 	common_test();
 	lex_test();
-	//parse_test();
+	//parse_test(); errors for some reason
+	resolve_test();
 }
