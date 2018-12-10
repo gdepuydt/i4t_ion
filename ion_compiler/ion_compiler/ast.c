@@ -241,6 +241,26 @@ Stmt *stmt_new(StmtKind kind, SrcPos pos) {
 	return s;
 }
 
+Stmt *stmt_return(SrcPos pos, Expr *expr) {
+	Stmt *s = stmt_new(STMT_RETURN, pos);
+	s->expr = expr;
+	return s;
+}
+
+Stmt *stmt_break(SrcPos pos) {
+	return stmt_new(STMT_BREAK, pos);
+}
+
+Stmt *stmt_continue(SrcPos pos) {
+	return stmt_new(STMT_CONTINUE, pos);
+}
+
+Stmt *stmt_block(SrcPos pos, StmtList block) {
+	Stmt *s = stmt_new(STMT_BLOCK, pos);
+	s->block = block;
+	return s;
+}
+
 Stmt *stmt_if(SrcPos pos, Expr *cond, StmtList then_block, ElseIf *elseifs, size_t num_elseifs, StmtList else_block) {
 	Stmt *s = stmt_new(STMT_IF, pos);
 	s->if_stmt.cond = cond;
