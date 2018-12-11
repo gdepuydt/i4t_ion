@@ -30,7 +30,9 @@ bool flag_fullgen;
 #include "ast.h"
 #include "ast.c"
 #include "parse.c"
+#include "targets.c"
 #include "resolve.c"
+#include "ion.c"
 
 #include "test.c"
 

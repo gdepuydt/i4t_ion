@@ -42,6 +42,7 @@ struct Type {
 	size_t align;
 	Sym *sym;
 	Type *base;
+	int typeid;
 	bool nonmodifiable;
 	union {
 		size_t num_elems;
@@ -57,3 +58,69 @@ struct Type {
 		} func;
 	};
 };
+
+int next_typeid = 1;
+Map typeid_map;
+
+void register_typeid(Type *type) {
+	map_put(&typeid_map, (void*)(uintptr_t)type->typeid, type);
+}
+
+Type *type_alloc(TypeKind kind) {
+	Type *type = xcalloc(1, sizeof(Type));
+	type->kind = kind;
+	type->typeid = next_typeid++;
+	register_typeid(type);
+	return type;
+}
+
+Map cached_ptr_types;
+
+typedef struct TypeMetrics {
+	size_t size;
+	size_t align;
+	bool sign;
+	unsigned long long max;
+}TypeMetrics;
+
+TypeMetrics *type_metrics;
+
+Type *type_void = &(Type) { TYPE_VOID };
+Type *type_bool = &(Type) { TYPE_BOOL };
+Type *type_char = &(Type) { TYPE_CHAR };
+Type *type_uchar = &(Type) { TYPE_UCHAR };
+Type *type_schar = &(Type) { TYPE_SCHAR };
+Type *type_short = &(Type) { TYPE_SHORT };
+Type *type_ushort = &(Type) { TYPE_USHORT };
+Type *type_int = &(Type) { TYPE_INT };
+Type *type_uint = &(Type) { TYPE_UINT };
+Type *type_long = &(Type) { TYPE_LONG };
+Type *type_ulong = &(Type) { TYPE_ULONG };
+Type *type_llong = &(Type) { TYPE_LLONG };
+Type *type_ullong = &(Type) { TYPE_ULLONG };
+Type *type_float = &(Type) { TYPE_FLOAT };
+Type *type_double = &(Type) { TYPE_DOUBLE };
+
+//these are set in target.c depending on the os and architecture
+Type *type_uintptr;
+Type *type_usize;
+Type *type_ssize;
+
+//type_metrics is platform dependent and implemented in the targets.c file
+Type *type_ptr(Type *base) {
+	Type *type = map_get(&cached_ptr_types, base);
+	if (!type) {
+		type = type_alloc(TYPE_PTR);
+		type->size = type_metrics[TYPE_PTR].size;
+		type->align = type_metrics[TYPE_PTR].align;
+		type->base = base;
+		map_put(&cached_ptr_types, base, type);
+	}
+	return type;
+
+}
+
+Type *type_array(Type *base, size_t num_elems) {
+	//TODO
+}
+

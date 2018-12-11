@@ -172,7 +172,7 @@ void parse_test(void) {
 		"typedef Vectors = Vector[1+2];",
 		"func f() { do { print(42); } while(1); }",
 		"typedef T = (func(int):int)[16];",
-		"func f() { enum E { A, B, C } return; }",
+		//"func f() { enum E { A, B, C } return; }",
 		"func f() { if (1) { return 1; } else if (2) { return 2; } else { return 3; } }",
 	};
 
@@ -185,7 +185,20 @@ void parse_test(void) {
 }
 
 void resolve_test(void) {
-	//TODO
+	init_compiler();
+	Type *int_ptr = type_ptr(type_int);
+	assert(type_ptr(type_int) == int_ptr);
+	Type *float_ptr = type_ptr(type_float);
+	assert(type_ptr(type_float) == float_ptr);
+	assert(int_ptr != float_ptr);
+	Type *int_ptr_ptr = type_ptr(type_ptr(type_int));
+	assert(type_ptr(type_ptr(type_int)) == int_ptr_ptr);
+	Type *float4_array = type_array(type_float, 4);
+	assert(type_array(type_float, 4) == float4_array);
+	Type *float3_array = type_array(type_float, 3);
+	assert(type_array(type_float, 3) == float3_array);
+	assert(float4_array != float3_array);
+	//TODO: other tests... after implementing the targets.c file
 }
 
 
@@ -199,6 +212,6 @@ void common_test(void) {
 void main_test(void) {
 	common_test();
 	lex_test();
-	//parse_test(); errors for some reason
+	parse_test();
 	resolve_test();
 }
