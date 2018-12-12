@@ -25,6 +25,7 @@ bool flag_notypeinfo;
 bool flag_fullgen;
 
 #include "../../../i4t_lib/src/common.c"
+#include "os.c"
 #include "lex.c"
 #include "type.c"
 #include "ast.h"

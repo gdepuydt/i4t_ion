@@ -45,6 +45,9 @@
     <ClCompile Include="ion.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="os.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ast.h">

@@ -59,6 +59,7 @@ struct Type {
 	};
 };
 
+
 int next_typeid = 1;
 Map typeid_map;
 
@@ -120,7 +121,34 @@ Type *type_ptr(Type *base) {
 
 }
 
+typedef struct CachedArrayType {
+	Type *type;
+	struct CachedArrayType *next;
+} CachedArrayType;
+
+Map cached_array_types;
+
 Type *type_array(Type *base, size_t num_elems) {
-	//TODO
+	uint64_t hash = hash_mix(hash_ptr(base), hash_uint64(num_elems));
+	uint64_t key = hash ? hash : 1;
+	CachedArrayType *cached = map_get_from_uint64(&cached_array_types, key);
+	for (CachedArrayType *it = cached; it; it = it->next) {
+		Type *type = it->type;
+		if (type->base == base && type->num_elems == num_elems) {
+			return type;
+		}
+	}
+	complete_type(base);
+	Type *type = type_alloc(TYPE_ARRAY);
+	type->nonmodifiable = base->nonmodifiable;
+	type->size = num_elems * type_sizeof(base);
+	type->align = type_alignof(base);
+	type->base = base;
+	type->num_elems = num_elems;
+	CachedArrayType *new_cached = xmalloc(sizeof(CachedArrayType));
+	new_cached->type = type;
+	new_cached->next = cached;
+	map_put_from_uint64(&cached_array_types, key, new_cached);
+	return type;
 }
 
