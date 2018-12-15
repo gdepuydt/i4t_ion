@@ -39,13 +39,13 @@
     <ClCompile Include="..\..\..\i4t_lib\src\common.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="targets.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ion.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="os.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="targets.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -3,21 +3,23 @@
 #else
 #error "C11 support required or Visual Studio 2015 or later"
 #endif
+
 #define __USE_MINGW_ANSI_STDIO 1
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <stddef.h>
-#include <assert.h>
 #include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stddef.h>
+#include <stdbool.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <stdbool.h>
+#include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
 #include <math.h>
-#include <limits.h>
 #include <inttypes.h>
+#include <limits.h>
+#include <assert.h>
+#include <stdlib.h>
 
 bool flag_verbose;
 bool flag_lazy;
@@ -30,16 +32,15 @@ bool flag_fullgen;
 #include "type.c"
 #include "ast.h"
 #include "ast.c"
+#include "print.c"
 #include "parse.c"
 #include "targets.c"
 #include "resolve.c"
+#include "gen.c"
 #include "ion.c"
-
 #include "test.c"
 
-
-int main(int argc, char **argv) {
-	main_test();
-	printf("Finished!\n");
-	getchar();
+int main(int argc, const char **argv) {
+ main_test();
+    //return ion_main(argc, argv);
 }
